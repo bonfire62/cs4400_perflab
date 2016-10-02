@@ -189,27 +189,7 @@ static void assign_sum_to_pixel(pixel *current_pixel, pixel_sum sum)
 /* 
  * weighted_combo - Returns new pixel value at (i,j) 
  */
-static pixel weighted_combo(int dim, int i, int j, pixel *src) 
-{
-  int ii, jj;
-  pixel_sum sum;
-  pixel current_pixel;
-  double weights[3][3] = { { 0.50, 0.03125, 0.00 },
-                           { 0.03125, 0.25, 0.03125 },
-                           { 0.00, 0.03125, 0.125 } };
 
-  initialize_pixel_sum(&sum);
-  for(ii=0; ii < 3; ii++)
-    for(jj=0; jj < 3; jj++) 
-      if ((i + ii < dim) && (j + jj < dim))
-        accumulate_weighted_sum(&sum,
-                                src[RIDX(i+ii,j+jj,dim)],
-                                weights[ii][jj]);
-    
-  assign_sum_to_pixel(&current_pixel, sum);
- 
-  return current_pixel;
-}
 
 /******************************************************
  * Your different versions of the motion kernel go here
@@ -221,11 +201,31 @@ static pixel weighted_combo(int dim, int i, int j, pixel *src)
 char naive_motion_descr[] = "naive_motion: Naive baseline implementation";
 void naive_motion(int dim, pixel *src, pixel *dst) 
 {
-  int i, j;
-    
-  for (i = 0; i < dim; i++)
-    for (j = 0; j < dim; j++)
-      dst[RIDX(i, j, dim)] = weighted_combo(dim, i, j, src);
+	int i, j;
+
+	for (i = 0; i < dim; i++)
+		for (j = 0; j < dim; j++)
+		{
+			int ii, jj;
+			pixel_sum sum;
+			pixel current_pixel;
+			double weights[3][3] = { { 0.50, 0.03125, 0.00 },
+				{ 0.03125, 0.25, 0.03125 },
+				{ 0.00, 0.03125, 0.125 } };
+
+			initialize_pixel_sum(&sum);
+			for(ii=0; ii < 3; ii++)
+				for(jj=0; jj < 3; jj++) 
+					if ((i + ii < dim) && (j + jj < dim))
+						accumulate_weighted_sum(&sum,
+								src[RIDX(i+ii,j+jj,dim)],
+								weights[ii][jj]);
+
+			assign_sum_to_pixel(&current_pixel, sum);
+
+			dst[RIDX(i, j, dim)] = current_pixel;
+
+		}
 }
 
 
